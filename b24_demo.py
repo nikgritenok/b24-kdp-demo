@@ -22,6 +22,9 @@ from datetime import datetime
 import requests
 import pandas as pd
 
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "")
+TG_CHAT_ID = os.environ.get("TG_CHAT_ID", "")
+
 WEBHOOK = os.environ.get("B24_WEBHOOK", "")
 if not WEBHOOK:
     sys.exit("Задай переменную B24_WEBHOOK (URL входящего вебхука Битрикс24)")
@@ -50,6 +53,18 @@ def call(method: str, params: dict | None = None) -> list[dict]:
         if not data.get("next"):
             return items
         start = data["next"]
+
+
+def send_telegram(text: str) -> None:
+    """Отправка сводки руководителю в Telegram (по желанию)."""
+    if not (TG_BOT_TOKEN and TG_CHAT_ID):
+        return
+    url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage"
+    r = requests.post(url, json={"chat_id": TG_CHAT_ID, "text": text}, timeout=30)
+    if r.ok:
+        print("\nСводка отправлена в Telegram")
+    else:
+        print(f"\nTelegram: не отправлено — {r.text[:200]}")
 
 
 def main():
@@ -103,6 +118,7 @@ def main():
 
     print(summary)
     print("\nГотово: summary.txt, report.xlsx")
+    send_telegram(summary)
 
 
 if __name__ == "__main__":
