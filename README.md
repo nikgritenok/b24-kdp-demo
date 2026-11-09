@@ -32,3 +32,7 @@ python main.py
 ## What it shows
 
 Bitrix24 REST through an incoming webhook, pagination and API error handling, pandas aggregation, Excel export with openpyxl, optional Telegram delivery. The whole thing is one file, `main.py`, because the point was a tool that runs before lunch, not a framework.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
