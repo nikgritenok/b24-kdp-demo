@@ -1,43 +1,34 @@
-# b24-kdp-demo — сводный отчёт по задачам Битрикс24
+# b24-kdp-demo: task summary from Bitrix24
 
-Микро-проект: одна команда — готовый отчёт для руководителя.
+One command, one report for the person who runs the team.
 
-**Что делает:** по входящему вебхуку забирает задачи из Битрикс24 через REST API (с автопостраничением), считает pandas-сводки (статусы, загрузка сотрудников, просрочки), сохраняет `summary.txt` + `report.xlsx` и опционально отправляет сводку в Telegram.
+The script takes a Bitrix24 incoming webhook, pulls every task through the REST API with automatic pagination, and builds the summaries a manager actually asks for: how many tasks per person, who is overloaded, what is overdue. Output is `summary.txt` plus `report.xlsx` with two sheets. If a Telegram bot token is set, the short version arrives in chat.
 
-## Зачем (Job Statement)
+## Why
 
-> Когда руководитель хочет понимать реальное состояние работ, он тратит 20–40 минут на ручной обход Битрикс24 и сотрудников, потому что статус работ нигде не сведён автоматически — и решения принимаются с опозданием или на устаревших данных.
+A manager who wants to know the real state of the work either walks through Bitrix24 by hand for half an hour or asks people. Both give answers that are already stale by the time they arrive.
 
-## Job Stories
+## Who it is for
 
-1. **Загрузка команды.** Когда я планирую неделю и распределяю задачи, я хочу видеть сводку «у кого сколько задач и кто перегружен», чтобы не заваливать одного человека работой, пока другой простаивает.
-2. **Просрочки.** Когда дедлайн поджимает, я хочу сразу видеть долю просроченных задач и по кому они висят, чтобы вмешаться точечно, а не устраивать общий разнос.
-3. **Отчёт наверх.** Когда меня спрашивают «как дела по проекту», я хочу иметь готовый отчёт в один клик (Excel + короткая сводка), чтобы отвечать цифрами за минуту, а не собирать их полдня.
+- Planning a week and spreading load: see who has what before assigning more.
+- Deadline pressure: see the share of overdue tasks and whose name is on them.
+- Reporting upward: answer with numbers in a minute instead of collecting them for a day.
 
-## Запуск
+## Run
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env        # и вписать свой B24_WEBHOOK (+ токен TG-бота по желанию)
+cp .env.example .env        # B24_WEBHOOK, optional TG token and chat id
 python main.py
 ```
 
-Результат: `summary.txt` (короткая сводка), `report.xlsx` (листы «Задачи» и «Загрузка сотрудников»), при настроенном TG-боте — сводка приходит сообщением.
+## Output
 
-## Структура
+- `summary.txt`: short text summary
+- `report.xlsx`: sheets "Задачи" and "Загрузка сотрудников"
+- Telegram message, if a bot is configured
 
-```
-main.py          # весь скрипт (REST + pandas + Excel + Telegram)
-requirements.txt
-.env.example     # шаблон настроек (реальный .env в git не попадает)
-.gitignore
-README.md
-```
+## What it shows
 
-## Что демонстрирует
-
-- REST API Битрикс24: входящий вебхук, автопостраничение, обработка ошибок API
-- Нормализация «грязных» данных API (camelCase/UPPER ключи, строки вместо чисел)
-- pandas: groupby/agg, маппинг ID → имена, работа с датами
-- Экспорт в Excel (openpyxl), доставка отчёта в Telegram
+Bitrix24 REST through an incoming webhook, pagination and API error handling, pandas aggregation, Excel export with openpyxl, optional Telegram delivery. The whole thing is one file, `main.py`, because the point was a tool that runs before lunch, not a framework.
